@@ -3,8 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import crypto from 'crypto';
-import { Resend } from '@resend/node';
-
+import { Resend } from 'resend';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
