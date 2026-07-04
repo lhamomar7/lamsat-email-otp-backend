@@ -1,0 +1,21 @@
+{
+  "name": "lamsat-email-otp-backend",
+  "version": "2.0.0",
+  "description": "Lamsat Hub backend for email OTP, Turnstile, order creation and order tracking",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "helmet": "latest",
+    "resend": "latest"
+  }
+}
