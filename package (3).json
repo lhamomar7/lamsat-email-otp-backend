@@ -1,0 +1,18 @@
+{
+  "name": "lamsat-email-otp-turnstile-backend",
+  "version": "1.0.0",
+  "description": "Email OTP + Cloudflare Turnstile backend for Lamsat Hub",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@resend/node": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "helmet": "latest"
+  }
+}
