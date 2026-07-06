@@ -267,6 +267,25 @@ app.post('/send-email-otp', async (req, res) => {
     });
 
 await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject: 'كود التحقق من Lamsat Hub',
+      text: `كود التحقق الخاص بك في Lamsat Hub هو: ${code}. الكود صالح لمدة ${OTP_EXPIRY_MINUTES} دقائق.`,
+      html: `
+        <div dir="rtl" style="font-family:Arial,sans-serif;background:#fff7f0;padding:24px">
+          <div style="max-width:520px;margin:auto;background:#ffffff;border:1px solid #f0e0de;border-radius:16px;padding:26px;text-align:center">
+            <h2 style="color:#8f2924;margin:0 0 12px">Lamsat Hub</h2>
+            <p style="color:#6b4a43;font-size:15px;margin:0 0 18px">كود التحقق لإتمام الطلب:</p>
+            <div style="font-size:34px;font-weight:900;letter-spacing:8px;color:#2b1d1a;background:#fff0ee;border-radius:12px;padding:16px;margin:18px 0">
+              ${code}
+            </div>
+            <p style="color:#8b7770;font-size:13px;line-height:1.8;margin:0">
+              الكود صالح لمدة ${OTP_EXPIRY_MINUTES} دقائق. إذا لم تطلبي هذا الكود، يمكنك تجاهل الرسالة.
+            </p>
+          </div>
+        </div>
+      `
+    });
 
     return res.json({ ok: true, message: 'تم إرسال كود التحقق إلى البريد الإلكتروني' });
   } catch (error) {
