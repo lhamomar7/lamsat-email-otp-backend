@@ -7,7 +7,7 @@ import { Resend } from 'resend';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+const LOGO_URL = process.env.LOGO_URL || 'https://lamsathub.com/lamsat.jpg';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Lamsat Hub <onboarding@resend.dev>';
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || '';
@@ -123,6 +123,153 @@ function canSendOtp(email, ip) {
   sendRateStore.set(key, now);
   return { ok: true };
 }
+
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function buildOtpEmailText({ code, minutes }) {
+  return [
+    `كود التحقق الخاص بك من Lamsat Hub Gifts هو: ${code}`,
+    `الكود صالح لمدة ${minutes} دقائق.`,
+    'إذا لم تطلبي هذا الكود، يمكنك تجاهل هذه الرسالة.',
+    'لا تشاركي الكود مع أي شخص حفاظاً على أمان طلبك.'
+  ].join('\n');
+}
+
+function buildOtpEmailHtml({ code, minutes, logoUrl }) {
+  const safeCode = escapeHtml(code);
+  const safeLogoUrl = escapeHtml(logoUrl);
+  const previewText = `كود التحقق الخاص بك هو ${safeCode} — صالح لمدة ${minutes} دقائق`;
+
+  return `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>كود التحقق من Lamsat Hub Gifts</title>
+</head>
+
+<body style="margin:0;padding:0;background:#fff7f0;font-family:Arial,Tahoma,sans-serif;direction:rtl;text-align:right;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;font-size:1px;line-height:1px;">
+    ${previewText}
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff7f0;padding:30px 12px;">
+    <tr>
+      <td align="center">
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f0e0de;box-shadow:0 18px 50px rgba(127,36,31,0.13);">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#7f241f,#b83a32);padding:30px 24px;text-align:center;">
+              <img
+                src="${safeLogoUrl}"
+                alt="Lamsat Hub Gifts"
+                width="102"
+                height="102"
+                style="width:102px;height:102px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,0.58);display:block;margin:0 auto 14px;background:#fff7f0;"
+              />
+
+              <div style="font-size:24px;font-weight:900;color:#ffffff;letter-spacing:1px;line-height:1.35;">
+                LAMSAT HUB GIFTS
+              </div>
+
+              <div style="font-size:14px;color:#ffd6cc;margin-top:6px;font-weight:700;">
+                by Maria
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:34px 30px 10px;text-align:center;">
+              <div style="font-size:42px;margin-bottom:10px;">💌</div>
+
+              <h1 style="margin:0;color:#2b1d1a;font-size:25px;font-weight:900;line-height:1.45;">
+                كود التحقق الخاص بك
+              </h1>
+
+              <p style="margin:12px 0 0;color:#8b7770;font-size:14px;line-height:1.9;font-weight:600;">
+                استخدمي الكود التالي لإتمام الطلب أو لتتبع طلبك في متجر
+                <strong style="color:#8f2924;">Lamsat Hub Gifts</strong>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:22px 30px;text-align:center;">
+              <div style="
+                display:inline-block;
+                background:#fff0ee;
+                color:#8f2924;
+                border:2px dashed #d85a50;
+                border-radius:20px;
+                padding:18px 30px;
+                font-size:38px;
+                font-weight:900;
+                letter-spacing:9px;
+                direction:ltr;
+                text-align:center;
+                box-shadow:0 8px 22px rgba(184,58,50,0.12);
+              ">
+                ${safeCode}
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 26px;text-align:center;">
+              <p style="margin:0;color:#6b4a43;font-size:14px;font-weight:800;line-height:1.8;">
+                الكود صالح لمدة
+                <strong style="color:#b83a32;">${minutes} دقائق</strong>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 30px 30px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f6;border:1px solid #f0e0de;border-radius:18px;">
+                <tr>
+                  <td style="padding:17px 18px;">
+                    <p style="margin:0;color:#8b7770;font-size:13px;line-height:1.9;font-weight:700;">
+                      🔒 إذا لم تطلبي هذا الكود، يمكنك تجاهل هذه الرسالة.
+                      لا تشاركي الكود مع أي شخص حفاظاً على أمان طلبك.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#2b1d1a;padding:20px;text-align:center;">
+              <p style="margin:0;color:rgba(255,255,255,0.74);font-size:12px;line-height:1.8;">
+                © 2026 Lamsat Hub Gifts — جميع الحقوق محفوظة 💝
+              </p>
+
+              <p style="margin:7px 0 0;color:rgba(255,255,255,0.42);font-size:11px;">
+                lamsathub.com
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
 
 function jsonBinHeaders(write = false, master = false) {
   const headers = { 'X-Bin-Meta': 'false', 'Cache-Control': 'no-cache' };
@@ -269,22 +416,16 @@ app.post('/send-email-otp', async (req, res) => {
 await resend.emails.send({
       from: EMAIL_FROM,
       to: email,
-      subject: 'كود التحقق من Lamsat Hub',
-      text: `كود التحقق الخاص بك في Lamsat Hub هو: ${code}. الكود صالح لمدة ${OTP_EXPIRY_MINUTES} دقائق.`,
-      html: `
-        <div dir="rtl" style="font-family:Arial,sans-serif;background:#fff7f0;padding:24px">
-          <div style="max-width:520px;margin:auto;background:#ffffff;border:1px solid #f0e0de;border-radius:16px;padding:26px;text-align:center">
-            <h2 style="color:#8f2924;margin:0 0 12px">Lamsat Hub</h2>
-            <p style="color:#6b4a43;font-size:15px;margin:0 0 18px">كود التحقق لإتمام الطلب:</p>
-            <div style="font-size:34px;font-weight:900;letter-spacing:8px;color:#2b1d1a;background:#fff0ee;border-radius:12px;padding:16px;margin:18px 0">
-              ${code}
-            </div>
-            <p style="color:#8b7770;font-size:13px;line-height:1.8;margin:0">
-              الكود صالح لمدة ${OTP_EXPIRY_MINUTES} دقائق. إذا لم تطلبي هذا الكود، يمكنك تجاهل الرسالة.
-            </p>
-          </div>
-        </div>
-      `
+      subject: 'كود التحقق الخاص بك من Lamsat Hub Gifts 💝',
+      text: buildOtpEmailText({
+        code,
+        minutes: OTP_EXPIRY_MINUTES
+      }),
+      html: buildOtpEmailHtml({
+        code,
+        minutes: OTP_EXPIRY_MINUTES,
+        logoUrl: LOGO_URL
+      })
     });
 
     return res.json({ ok: true, message: 'تم إرسال كود التحقق إلى البريد الإلكتروني' });
